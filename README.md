@@ -1,5 +1,7 @@
 # falkordb-kubernetes (Helm)
 
+Standalone source repo: [github.com/Fluder-Paradyne/falkordb-kubernetes-helm](https://github.com/Fluder-Paradyne/falkordb-kubernetes-helm)
+
 Example Helm chart that runs **FalkorDB** using the **Bitnami Redis** chart in **replication + Sentinel** mode, with the fixes required for a non-Bitnami Redis image.
 
 ## Why this exists
