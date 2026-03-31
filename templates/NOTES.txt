@@ -1,0 +1,15 @@
+1. FalkorDB (Redis) is installed as subchart `redis` with Sentinel.
+
+2. In-cluster Redis endpoint (typical Bitnami naming):
+   {{ .Release.Name }}-redis.{{ .Release.Namespace }}.svc.cluster.local:6379
+
+3. Retrieve the Redis password (if auth is enabled and chart generated it):
+   kubectl get secret --namespace {{ .Release.Namespace }} {{ .Release.Name }}-redis -o jsonpath="{.data.redis-password}" | base64 -d
+   echo
+
+4. Smoke test (from your machine, after port-forward):
+   kubectl port-forward -n {{ .Release.Namespace }} svc/{{ .Release.Name }}-redis 6379:6379
+   REDISCLI_AUTH="<password>" redis-cli -h 127.0.0.1 -p 6379 PING
+   GRAPH.QUERY mygraph "UNWIND range(1,3) AS i RETURN i"
+
+5. For HA, consider replica.replicaCount: 3 (odd) and pod anti-affinity (set under redis.replica).

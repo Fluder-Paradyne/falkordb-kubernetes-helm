@@ -1,0 +1,68 @@
+# Values for the bitnami/redis subchart (nested under `redis`).
+# Install: helm dependency update && helm install falkordb . -n falkordb --create-namespace
+#
+# Set a password (required for production):
+#   helm install falkordb . --set redis.auth.password=secret -n falkordb --create-namespace
+
+redis:
+  global:
+    security:
+      allowInsecureImages: true
+    defaultFips: off
+
+  commonLabels:
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: falkordb
+
+  image:
+    registry: docker.io
+    repository: falkordb/falkordb
+    tag: "v4.16.7"
+
+  architecture: replication
+
+  commonConfiguration: |-
+    loadmodule /var/lib/falkordb/bin/falkordb.so
+    appendonly yes
+    save ""
+
+  sentinel:
+    enabled: true
+
+  auth:
+    enabled: true
+    sentinel: true
+    password: ""
+
+  master:
+    persistence:
+      enabled: true
+      size: 20Gi
+
+  replica:
+    replicaCount: 2
+    persistence:
+      enabled: true
+      size: 20Gi
+    initContainers:
+      - name: bitnami-scripts
+        image: docker.io/bitnamilegacy/redis:8.2.1-debian-12-r0
+        imagePullPolicy: IfNotPresent
+        command:
+          - /bin/bash
+          - -ec
+          - |
+            set -e
+            cp -r /opt/bitnami/scripts/. /staging/
+        volumeMounts:
+          - name: bitnami-scripts-staging
+            mountPath: /staging
+    extraVolumes:
+      - name: bitnami-scripts-staging
+        emptyDir: {}
+    extraVolumeMounts:
+      - name: bitnami-scripts-staging
+        mountPath: /opt/bitnami/scripts
+
+  metrics:
+    enabled: true
